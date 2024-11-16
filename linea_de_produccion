@@ -1,0 +1,155 @@
+import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+public class FabricaProduccion {
+
+    // Cola para que las líneas de producción envíen mensajes al proceso principal
+    private static BlockingQueue<String> colaReportes = new LinkedBlockingQueue<>();
+
+    // El único usuario permitido para iniciar sesión
+    private static String[] usuariosPermitidos = {"jbls"};
+
+
+    // Para detener las líneas de producción cuando sea necesario
+    private static boolean cerrarSistema = false;
+
+    // Aquí almacenamos el estado de cada línea de producción
+    private static String[] estadoLineas;
+
+    public static void main(String[] args) {
+
+        // Simulación del login con opción para salir
+        Scanner scanner = new Scanner(System.in);
+        String usuario = "";
+
+        // Pedimos el nombre de usuario hasta que sea correcto o hasta que el usuario decida salir
+        while (true) {
+            System.out.print("Ingrese el nombre de usuario (o '0' para salir): ");
+            usuario = scanner.nextLine();
+
+            // Si el usuario pone '0', se sale del programa
+            if (usuario.equals("0")) {
+                System.out.println("Saliendo del sistema. Hasta luego.");
+                return;  // Fin del programa
+            }
+
+            // Si el usuario es correcto, sigue adelante
+            if (loginValido(usuario)) {
+                break;  // Salimos del bucle si el login es correcto
+            } else {
+                // Si el usuario es incorrecto, mostramos un mensaje y pedimos de nuevo
+                System.out.println("Usuario incorrecto. Inténtelo de nuevo.");
+            }
+        }
+
+        // Mensaje de bienvenida después del login exitoso
+        System.out.println("Bienvenido, " + usuario + ". Accediendo al sistema de producción...");
+
+        // Número de líneas de producción simuladas (puedes cambiar este número si quieres)
+        int numLineasProduccion = 3;
+        estadoLineas = new String[numLineasProduccion];
+
+        // Creamos un grupo de hilos para ejecutar las líneas de producción en paralelo
+        ExecutorService executorService = Executors.newFixedThreadPool(numLineasProduccion);
+
+        // Iniciamos las líneas de producción en paralelo, cada una corre en su propio hilo
+        for (int i = 1; i <= numLineasProduccion; i++) {
+            int linea = i;
+            executorService.submit(() -> lineaProduccion(linea));
+        }
+
+        // Este hilo va escuchando los reportes que envían las líneas de producción
+        new Thread(() -> {
+            while (!cerrarSistema) {
+                try {
+                    // Recibimos reportes de las líneas de producción cada 3 segundos
+                    String reporte = colaReportes.poll(3, TimeUnit.SECONDS);
+                    if (reporte != null) {
+                        System.out.println(reporte);  // Mostramos el reporte recibido
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        // Este hilo muestra el estado de todas las líneas de producción cada 3 segundos
+        new Thread(() -> {
+            while (!cerrarSistema) {
+                System.out.println("\n=== Estado de las líneas de producción ===");
+                for (int i = 0; i < numLineasProduccion; i++) {
+                    String estado = estadoLineas[i];
+                    System.out.println("Línea " + (i + 1) + ": " + (estado != null ? estado : "Iniciando..."));
+                }
+                System.out.println("=========================================");
+                try {
+                    Thread.sleep(3000);  // Pausa de 3 segundos antes de la próxima actualización
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        // Verificamos si el usuario quiere cerrar sesión
+        while (!cerrarSistema) {
+            System.out.println("Presione '0' para cerrar sesión.");
+            if (scanner.hasNextInt() && scanner.nextInt() == 0) {
+                cerrarSistema = true;  // Marcamos para cerrar el sistema
+                System.out.println("Cerrando sesión. Hasta luego, " + usuario + ".");
+                executorService.shutdownNow();  // Detenemos todos los hilos de producción
+                break;
+            }
+        }
+
+        // Esperamos hasta que todos los hilos de producción se detengan
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            System.out.println("Error al detener las líneas de producción.");
+        }
+
+        scanner.close();
+    }
+
+    // Método para validar si el nombre de usuario es correcto
+    public static boolean loginValido(String usuario) {
+        for (String usuarioPermitido : usuariosPermitidos) {
+            if (usuarioPermitido.equalsIgnoreCase(usuario)) {
+                return true;
+            }
+        }
+        return false;  // Si no es "jbls", devuelve false
+    }
+
+    // Este método simula una línea de producción real
+    public static void lineaProduccion(int linea) {
+        int productosFabricados = 0;
+        try {
+            while (!cerrarSistema) {
+                // Esperamos 3 segundos para simular la fabricación de un producto
+                Thread.sleep(3000);
+                productosFabricados++;
+                // Enviamos un reporte al proceso principal
+                String reporte = "Línea " + linea + ": Producto " + productosFabricados + " fabricado.";
+                colaReportes.put(reporte);
+
+                // Actualizamos el estado de la línea
+                estadoLineas[linea - 1] = "Fabricando producto " + productosFabricados;
+
+                // Cada 5 productos, hacemos una pausa para mantenimiento
+                if (productosFabricados % 5 == 0) {
+                    Thread.sleep(2000);  // Simulación del tiempo de mantenimiento
+                    String mantenimiento = "Línea " + linea + ": Mantenimiento realizado después de " + productosFabricados + " productos.";
+                    colaReportes.put(mantenimiento);
+                    estadoLineas[linea - 1] = "En mantenimiento";
+                }
+            }
+        } catch (InterruptedException e) {
+            System.out.println("Línea de producción " + linea + " detenida.");
+        }
+    }
+}
