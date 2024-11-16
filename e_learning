@@ -1,0 +1,599 @@
+import java.util.*;
+
+// Clase Curso que representa un curso con módulos
+class Curso {
+    private String nombre;
+    private Modulo[] modulos;
+    private int numeroModulos;
+
+    // Constructor que inicializa el nombre del curso y el tamaño del arreglo de módulos
+    public Curso(String nombre, int tamano) {
+        this.nombre = nombre;
+        this.modulos = new Modulo[tamano];
+        this.numeroModulos = 0;
+    }
+    // Método getter para obtener el nombre del curso
+    public String getNombre() {
+        return nombre;
+    }
+    // Método para agregar un módulo al curso
+    public void agregarModulo(Modulo modulo) {
+        if (numeroModulos < modulos.length) {
+            modulos[numeroModulos++] = modulo;
+        } else {
+            System.out.println("No se puede agregar más módulos, el arreglo está lleno.");
+        }
+    }
+    // Método para eliminar un módulo del curso
+    public void eliminarModulo(String nombreModulo) {
+        for (int i = 0; i < numeroModulos; i++) {
+            if (modulos[i].getNombre().equals(nombreModulo)) {
+                modulos[i] = modulos[--numeroModulos];
+                modulos[numeroModulos] = null;
+                System.out.println("Módulo " + nombreModulo + " eliminado.");
+                return;
+            }
+        }
+        System.out.println("Módulo " + nombreModulo + " no encontrado.");
+    }
+    // Método para obtener los módulos del curso
+    public Modulo[] getModulos() {
+        return modulos;
+    }
+    // Método para calcular el progreso total del curso
+    public double calcularProgreso() {
+        return calcularProgresoRecursivo(0, 0);
+    }
+    // Método recursivo privado para calcular el progreso total del curso
+    private double calcularProgresoRecursivo(int index, double progresoTotal) {
+        if (index >= numeroModulos) {
+            return numeroModulos == 0 ? 0 : progresoTotal / numeroModulos;
+        }
+        return calcularProgresoRecursivo(index + 1, progresoTotal + modulos[index].calcularProgreso());
+    }
+}
+
+// Clase Modulo que representa un módulo con lecciones
+class Modulo {
+    private String nombre;
+    private List<Leccion> lecciones;
+    // Constructor que inicializa el nombre del módulo y la lista de lecciones
+    public Modulo(String nombre) {
+        this.nombre = nombre;
+        this.lecciones = new ArrayList<>();
+    }
+    // Método getter para obtener el nombre del módulo
+    public String getNombre() {
+        return nombre;
+    }
+    // Método para agregar una lección al módulo
+    public void agregarLeccion(Leccion leccion) {
+        lecciones.add(leccion);
+    }
+    // Método para eliminar una lección del módulo
+    public void eliminarLeccion(String nombreLeccion) {
+        for (Iterator<Leccion> iterator = lecciones.iterator(); iterator.hasNext();) {
+            Leccion leccion = iterator.next();
+            if (leccion.getNombre().equals(nombreLeccion)) {
+                iterator.remove();
+                System.out.println("Lección " + nombreLeccion + " eliminada.");
+                return;
+            }
+        }
+        System.out.println("Lección " + nombreLeccion + " no encontrada.");
+    }
+    // Método para obtener las lecciones del módulo
+    public List<Leccion> getLecciones() {
+        return lecciones;
+    }
+    // Método para calcular el progreso total del módulo
+    public double calcularProgreso() {
+        double progresoTotal = 0;
+        for (Leccion leccion : lecciones) {
+            progresoTotal += leccion.calcularProgreso();
+        }
+        return lecciones.isEmpty() ? 0 : progresoTotal / lecciones.size();
+    }
+}
+
+// Clase Leccion que representa una lección con tareas
+class Leccion {
+    private String nombre;
+    private List<Tarea> tareas;
+    // Constructor que inicializa el nombre de la lección y la lista de tareas
+    public Leccion(String nombre) {
+        this.nombre = nombre;
+        this.tareas = new ArrayList<>();
+    }
+    // Método getter para obtener el nombre de la lección
+    public String getNombre() {
+        return nombre;
+    }
+    // Método para agregar una tarea a la lección
+    public void agregarTarea(Tarea tarea) {
+        tareas.add(tarea);
+    }
+    // Método para eliminar una tarea de la lección
+    public void eliminarTarea(String nombreTarea) {
+        for (Iterator<Tarea> iterator = tareas.iterator(); iterator.hasNext();) {
+            Tarea tarea = iterator.next();
+            if (tarea.getNombre().equals(nombreTarea)) {
+                iterator.remove();
+                System.out.println("Tarea " + nombreTarea + " eliminada.");
+                return;
+            }
+        }
+        System.out.println("Tarea " + nombreTarea + " no encontrada.");
+    }
+    // Método para obtener las tareas de la lección
+    public List<Tarea> getTareas() {
+        return tareas;
+    }
+    // Método para calcular el progreso total de la lección
+    public double calcularProgreso() {
+        if (tareas.isEmpty()) {
+            return 0;
+        }
+
+        double tareasCompletadas = 0;
+        for (Tarea tarea : tareas) {
+            if (tarea.isCompletada()) {
+                tareasCompletadas++;
+            }
+        }
+        return tareasCompletadas / tareas.size();
+    }
+}
+
+// Clase Tarea que representa una tarea
+class Tarea {
+    private String nombre;
+    private boolean completada;
+    // Constructor que inicializa el nombre de la tarea y su estado de completada
+    public Tarea(String nombre) {
+        this.nombre = nombre;
+        this.completada = false;
+    }
+    // Método getter para obtener el nombre de la tarea
+    public String getNombre() {
+        return nombre;
+    }
+    // Método para verificar si la tarea está completada
+    public boolean isCompletada() {
+        return completada;
+    }
+    // Método para marcar la tarea como completada
+    public void completar() {
+        this.completada = true;
+    }
+}
+
+// Clase NodoArbol que representa un nodo en un árbol binario de búsqueda
+class NodoArbol {
+    Curso curso;
+    NodoArbol izquierdo, derecho;
+    // Constructor que inicializa el curso y los hijos izquierdo y derecho
+    public NodoArbol(Curso curso) {
+        this.curso = curso;
+        izquierdo = derecho = null;
+    }
+}
+
+// Clase ArbolBinarioBusqueda que maneja un árbol binario de búsqueda de cursos
+class ArbolBinarioBusqueda {
+    private NodoArbol raiz;
+    // Constructor que inicializa la raíz del árbol como null
+    public ArbolBinarioBusqueda() {
+        raiz = null;
+    }
+    // Método para agregar un curso al árbol
+    public void agregarCurso(Curso curso) {
+        raiz = agregarCursoRecursivo(raiz, curso);
+    }
+    // Método recursivo privado para agregar un curso al árbol
+    private NodoArbol agregarCursoRecursivo(NodoArbol nodo, Curso curso) {
+        if (nodo == null) {
+            return new NodoArbol(curso);
+        }
+        if (curso.getNombre().compareTo(nodo.curso.getNombre()) < 0) {
+            nodo.izquierdo = agregarCursoRecursivo(nodo.izquierdo, curso);
+        } else if (curso.getNombre().compareTo(nodo.curso.getNombre()) > 0) {
+            nodo.derecho = agregarCursoRecursivo(nodo.derecho, curso);
+        }
+        return nodo;
+    }
+    // Método para mostrar los cursos en orden alfabético (in-order traversal)
+    public void inOrden() {
+        inOrdenRecursivo(raiz);
+    }
+    // Método recursivo privado para mostrar los cursos en orden alfabético
+    private void inOrdenRecursivo(NodoArbol nodo) {
+        if (nodo != null) {
+            inOrdenRecursivo(nodo.izquierdo);
+            System.out.println(nodo.curso.getNombre());
+            inOrdenRecursivo(nodo.derecho);
+        }
+    }
+}
+
+// Clase Grafo para manejar las relaciones entre estudiantes y cursos
+class Grafo {
+    private Map<String, List<String>> relaciones;
+    // Constructor que inicializa el mapa de relaciones
+    public Grafo() {
+        this.relaciones = new HashMap<>();
+    }
+    // Método para agregar una relación entre un estudiante y un curso
+    public void agregarRelacion(String estudiante, String curso) {
+        if (!relaciones.containsKey(estudiante)) {
+            relaciones.put(estudiante, new ArrayList<>());
+        }
+        relaciones.get(estudiante).add(curso);
+    }
+// Método para mostrar todas las relaciones entre estudiantes y cursos
+
+    public void mostrarRelaciones() {
+        for (Map.Entry<String, List<String>> entry : relaciones.entrySet()) {
+            System.out.println("Estudiante: " + entry.getKey() + " está inscrito en los cursos: " + entry.getValue());
+        }
+    }
+}
+
+// Clase Estudiante que representa un estudiante con cursos en progreso y completados
+class Estudiante {
+    private String nombre;
+    private List<Curso> cursosEnProgreso;
+    private List<Curso> cursosCompletados;
+    // Constructor que inicializa el nombre del estudiante y las listas de cursos
+    public Estudiante(String nombre) {
+        this.nombre = nombre;
+        this.cursosEnProgreso = new ArrayList<>();
+        this.cursosCompletados = new ArrayList<>();
+    }
+    // Método getter para obtener el nombre del estudiante
+    public String getNombre() {
+        return nombre;
+    }
+    // Método para obtener los cursos en progreso
+    public List<Curso> getCursosEnProgreso() {
+        return cursosEnProgreso;
+    }
+
+
+
+    public double calcularProgresoGeneral() {
+        if (cursosEnProgreso.isEmpty() && cursosCompletados.isEmpty()) {
+            return 0;
+        }
+
+        double progresoTotal = 0;
+        int totalCursos = cursosEnProgreso.size() + cursosCompletados.size();
+
+        for (Curso curso : cursosEnProgreso) {
+            progresoTotal += curso.calcularProgreso();
+        }
+
+        for (Curso curso : cursosCompletados) {
+            progresoTotal += curso.calcularProgreso();
+        }
+
+        return progresoTotal / totalCursos;
+    }
+}
+
+// Clase plataforma (modificada con inicialización específica para cada estudiante)
+public class plataforma {
+    private static Map<String, Curso> cursos = new HashMap<>();
+    private static Map<String, Estudiante> estudiantes = new HashMap<>();
+    private static Stack<String> historialActividades = new Stack<>();
+    private static Queue<Tarea> colaTareas = new LinkedList<>();
+    private static ArbolBinarioBusqueda arbolCursos = new ArbolBinarioBusqueda();
+    private static Grafo grafo = new Grafo();
+    private static Scanner scanner = new Scanner(System.in);
+    // Clase main para demostrar el funcionamiento de todas las clases
+    public static void main(String[] args) {
+        // Creación de cursos, módulos, lecciones y tareas
+        Curso curso1 = new Curso("Programacion en Java", 5);
+        Curso curso2 = new Curso("Estructura de Datos", 3);
+        Curso curso3 = new Curso("Arquitectura de Computadoras", 4);
+
+        Modulo modulo1 = new Modulo("Tipos de Datos");
+        Modulo modulo2 = new Modulo("Herencia");
+        Modulo modulo3 = new Modulo("Ordenamiento");
+        Modulo modulo4 = new Modulo("Pilas");
+        Modulo modulo5 = new Modulo("CPU");
+
+        Leccion leccion1 = new Leccion("Leccion1");
+        Leccion leccion2 = new Leccion("Lccon2");
+        Leccion leccion3 = new Leccion("Lccion1");
+        Leccion leccion4 = new Leccion("Leccion2");
+        Leccion leccion5 = new Leccion("Leccion1");
+
+        Tarea tarea1 = new Tarea("Tarea 1");
+        Tarea tarea2 = new Tarea("Tarea 2");
+        Tarea tarea3 = new Tarea("Prueba");
+        Tarea tarea4 = new Tarea("Evaluacion");
+
+        leccion1.agregarTarea(tarea1);
+        leccion1.agregarTarea(tarea2);
+        leccion3.agregarTarea(tarea3);
+        leccion5.agregarTarea(tarea4);
+
+        modulo1.agregarLeccion(leccion1);
+        modulo2.agregarLeccion(leccion2);
+        modulo3.agregarLeccion(leccion3);
+        modulo4.agregarLeccion(leccion4);
+        modulo5.agregarLeccion(leccion5);
+
+        curso1.agregarModulo(modulo1);
+        curso1.agregarModulo(modulo2);
+        curso2.agregarModulo(modulo3);
+        curso2.agregarModulo(modulo4);
+        curso3.agregarModulo(modulo5);
+
+        cursos.put(curso1.getNombre(), curso1);
+        cursos.put(curso2.getNombre(), curso2);
+        cursos.put(curso3.getNombre(), curso3);
+
+        arbolCursos.agregarCurso(curso1);
+        arbolCursos.agregarCurso(curso2);
+        arbolCursos.agregarCurso(curso3);
+
+        Estudiante estudiante1 = new Estudiante("Carlos Cabrera");
+        Estudiante estudiante2 = new Estudiante("Maria lopez");
+
+        estudiantes.put(estudiante1.getNombre(), estudiante1);
+        estudiantes.put(estudiante2.getNombre(), estudiante2);
+
+        grafo.agregarRelacion(estudiante1.getNombre(), curso1.getNombre());
+        grafo.agregarRelacion(estudiante1.getNombre(), curso2.getNombre());
+        grafo.agregarRelacion(estudiante2.getNombre(), curso3.getNombre());
+
+        menu();
+    }
+
+    private static void menu() {
+        int opcion;
+
+        do {
+            System.out.println("\n Menú  ");
+            System.out.println("1. Mostrar cursos");
+            System.out.println("2. Agregar curso");
+            System.out.println("3. Eliminar curso");
+            System.out.println("4. Mostrar progreso de estudiante");
+            System.out.println("5. Completar tarea");
+            System.out.println("6. Historial de actividades");
+            System.out.println("7. Grafo de relaciones");
+            System.out.println("8. Mostrar cursos en orden alfabético (Árbol Binario de Búsqueda)");
+            System.out.println("9. Eliminar módulo");
+            System.out.println("10. Eliminar lección");
+            System.out.println("11. Eliminar tarea");
+            System.out.println("12. Salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine();  // Consumir el salto de línea
+
+            switch (opcion) {
+                case 1:
+                    listarCursos();
+                    break;
+                case 2:
+                    agregarCurso();
+                    break;
+                case 3:
+                    eliminarCurso();
+                    break;
+                case 4:
+                    mostrarProgresoEstudiante();
+                    break;
+                case 5:
+                    completarTarea();
+                    break;
+                case 6:
+                    mostrarHistorial();
+                    break;
+                case 7:
+                    mostrarGrafo();
+                    break;
+                case 8:
+                    mostrarCursosEnOrdenAlfabetico();
+                    break;
+                case 9:
+                    eliminarModulo();
+                    break;
+                case 10:
+                    eliminarLeccion();
+                    break;
+                case 11:
+                    eliminarTarea();
+                    break;
+                case 12:
+                    System.out.println("Saliendo del sistema.");
+                    break;
+                default:
+                    System.out.println("Opción no válida. Intente nuevamente.");
+            }
+        } while (opcion != 12);
+    }
+
+    private static void listarCursos() {
+        if (cursos.isEmpty()) {
+            System.out.println("No hay cursos disponibles.");
+        } else {
+            System.out.println("Cursos disponibles:");
+            for (String nombreCurso : cursos.keySet()) {
+                System.out.println(nombreCurso);
+            }
+        }
+    }
+
+    private static void agregarCurso() {
+        System.out.print("Ingrese el nombre del nuevo curso: ");
+        String nombreCurso = scanner.nextLine();
+        System.out.print("Ingrese el tamaño del nuevo curso: ");
+        int tamano = scanner.nextInt();
+        scanner.nextLine();  // Consumir el salto de línea
+        Curso nuevoCurso = new Curso(nombreCurso, tamano);
+        cursos.put(nombreCurso, nuevoCurso);
+        arbolCursos.agregarCurso(nuevoCurso);
+        historialActividades.push("Curso " + nombreCurso + " agregado.");
+        System.out.println("Curso " + nombreCurso + " agregado exitosamente.");
+    }
+
+    private static void eliminarCurso() {
+        System.out.print("Ingrese el nombre del curso a eliminar: ");
+        String nombreCurso = scanner.nextLine();
+        if (cursos.containsKey(nombreCurso)) {
+            cursos.remove(nombreCurso);
+            historialActividades.push("Curso " + nombreCurso + " eliminado.");
+            System.out.println("Curso " + nombreCurso + " eliminado exitosamente.");
+        } else {
+            System.out.println("Curso " + nombreCurso + " no encontrado.");
+        }
+    }
+
+    private static void mostrarProgresoEstudiante() {
+        System.out.print("Ingrese el nombre del estudiante: ");
+        String nombreEstudiante = scanner.nextLine();
+        Estudiante estudiante = estudiantes.get(nombreEstudiante);
+        if (estudiante != null) {
+            System.out.println("Progreso del estudiante " + nombreEstudiante + ": " + estudiante.calcularProgresoGeneral() * 100 + "%");
+        } else {
+            System.out.println("Estudiante " + nombreEstudiante + " no encontrado.");
+        }
+    }
+
+    private static void completarTarea() {
+        System.out.print("Ingrese el nombre del estudiante: ");
+        String nombreEstudiante = scanner.nextLine();
+        Estudiante estudiante = estudiantes.get(nombreEstudiante);
+        if (estudiante != null) {
+            System.out.print("Ingrese el nombre de la tarea a completar: ");
+            String nombreTarea = scanner.nextLine();
+            boolean tareaEncontrada = false;
+            for (Curso curso : estudiante.getCursosEnProgreso()) {
+                for (Modulo modulo : curso.getModulos()) {
+                    if (modulo != null) {
+                        for (Leccion leccion : modulo.getLecciones()) {
+                            for (Tarea tarea : leccion.getTareas()) {
+                                if (tarea.getNombre().equals(nombreTarea)) {
+                                    tarea.completar();
+                                    colaTareas.add(tarea);
+                                    historialActividades.push("Tarea " + nombreTarea + " completada por " + nombreEstudiante + ".");
+                                    System.out.println("Tarea " + nombreTarea + " completada exitosamente.");
+                                    tareaEncontrada = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (!tareaEncontrada) {
+                System.out.println("Tarea " + nombreTarea + " no encontrada.");
+            }
+        } else {
+            System.out.println("Estudiante " + nombreEstudiante + " no encontrado.");
+        }
+    }
+
+    private static void mostrarHistorial() {
+        if (historialActividades.isEmpty()) {
+            System.out.println("No hay actividades registradas en el historial.");
+        } else {
+            System.out.println("Historial de actividades:");
+            for (String actividad : historialActividades) {
+                System.out.println(actividad);
+            }
+        }
+    }
+
+    private static void mostrarGrafo() {
+        grafo.mostrarRelaciones();
+    }
+
+    private static void mostrarCursosEnOrdenAlfabetico() {
+        arbolCursos.inOrden();
+    }
+
+    private static void eliminarModulo() {
+        System.out.print("Ingrese el nombre del curso del módulo: ");
+        String nombreCurso = scanner.nextLine();
+        Curso curso = cursos.get(nombreCurso);
+        if (curso != null) {
+            System.out.print("Ingrese el nombre del módulo a eliminar: ");
+            String nombreModulo = scanner.nextLine();
+            curso.eliminarModulo(nombreModulo);
+            historialActividades.push("Módulo " + nombreModulo + " eliminado del curso " + nombreCurso + ".");
+        } else {
+            System.out.println("Curso " + nombreCurso + " no encontrado.");
+        }
+    }
+
+    private static void eliminarLeccion() {
+        System.out.print("Ingrese el nombre del curso de la lección: ");
+        String nombreCurso = scanner.nextLine();
+        Curso curso = cursos.get(nombreCurso);
+        if (curso != null) {
+            System.out.print("Ingrese el nombre del módulo de la lección: ");
+            String nombreModulo = scanner.nextLine();
+            Modulo modulo = null;
+            for (Modulo m : curso.getModulos()) {
+                if (m != null && m.getNombre().equals(nombreModulo)) {
+                    modulo = m;
+                    break;
+                }
+            }
+            if (modulo != null) {
+                System.out.print("Ingrese el nombre de la lección a eliminar: ");
+                String nombreLeccion = scanner.nextLine();
+                modulo.eliminarLeccion(nombreLeccion);
+                historialActividades.push("Lección " + nombreLeccion + " eliminada del módulo " + nombreModulo + " en el curso " + nombreCurso + ".");
+            } else {
+                System.out.println("Módulo " + nombreModulo + " no encontrado.");
+            }
+        } else {
+            System.out.println("Curso " + nombreCurso + " no encontrado.");
+        }
+    }
+
+    private static void eliminarTarea() {
+        System.out.print("Ingrese el nombre del curso de la tarea: ");
+        String nombreCurso = scanner.nextLine();
+        Curso curso = cursos.get(nombreCurso);
+        if (curso != null) {
+            System.out.print("Ingrese el nombre del módulo de la tarea: ");
+            String nombreModulo = scanner.nextLine();
+            Modulo modulo = null;
+            for (Modulo m : curso.getModulos()) {
+                if (m != null && m.getNombre().equals(nombreModulo)) {
+                    modulo = m;
+                    break;
+                }
+            }
+            if (modulo != null) {
+                System.out.print("Ingrese el nombre de la lección de la tarea: ");
+                String nombreLeccion = scanner.nextLine();
+                Leccion leccion = null;
+                for (Leccion l : modulo.getLecciones()) {
+                    if (l.getNombre().equals(nombreLeccion)) {
+                        leccion = l;
+                        break;
+                    }
+                }
+                if (leccion != null) {
+                    System.out.print("Ingrese el nombre de la tarea a eliminar: ");
+                    String nombreTarea = scanner.nextLine();
+                    leccion.eliminarTarea(nombreTarea);
+                    historialActividades.push("Tarea " + nombreTarea + " eliminada de la lección " + nombreLeccion + " en el módulo " + nombreModulo + " del curso " + nombreCurso + ".");
+                } else {
+                    System.out.println("Lección " + nombreLeccion + " no encontrada.");
+                }
+            } else {
+                System.out.println("Módulo " + nombreModulo + " no encontrado.");
+            }
+        } else {
+            System.out.println("Curso " + nombreCurso + " no encontrado.");
+        }
+    }
+}
