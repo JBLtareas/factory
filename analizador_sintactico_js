@@ -1,0 +1,107 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+class Token {
+    public final String tipo;
+    public final String valor;
+
+    public Token(String tipo, String valor) {
+        this.tipo = tipo;
+        this.valor = valor;
+    }
+
+    @Override
+    public String toString() {
+        return "Token(" + tipo + ", " + valor + ")";
+    }
+}
+
+class AnalizadorLexico {
+    private final String codigoFuente;
+    private final List<Token> tokens = new ArrayList<>();
+    private int indiceActual = 0;
+
+    public AnalizadorLexico(String codigoFuente) {
+        this.codigoFuente = codigoFuente;
+    }
+
+    public List<Token> tokenizar() {
+        String especificacionTokens = ""
+                + "(?<NUMERO>\\d+(\\.\\d*)?)"
+                + "|(?<ID>[A-Za-z_]\\w*)"
+                + "|(?<ASIGNACION>=)"
+                + "|(?<FIN>;)"
+                + "|(?<OPERADOR>[+\\-*/])"
+                + "|(?<LPAREN>\\()"
+                + "|(?<RPAREN>\\))"
+                + "|(?<LLAVEIZQ>\\{)"
+                + "|(?<LLAVEDER>\\})"
+                + "|(?<SI>if)"
+                + "|(?<SINO>else)"
+                + "|(?<MIENTRAS>while)"
+                + "|(?<ESPACIO>[ \\t])"
+                + "|(?<NUEVALINEA>\\n)"
+                + "|(?<TIPO>int|float|double|string|char|boolean)"
+                + "|(?<MISMATCH>.)";
+
+        Pattern patronTokens = Pattern.compile(especificacionTokens);
+        Matcher matcher = patronTokens.matcher(codigoFuente);
+
+        while (matcher.find()) {
+            if (matcher.group("NUMERO") != null) {
+                tokens.add(new Token("NUMERO", matcher.group("NUMERO")));
+            } else if (matcher.group("ID") != null) {
+                tokens.add(new Token("ID", matcher.group("ID")));
+            } else if (matcher.group("ASIGNACION") != null) {
+                tokens.add(new Token("ASIGNACION", matcher.group("ASIGNACION")));
+            } else if (matcher.group("FIN") != null) {
+                tokens.add(new Token("FIN", matcher.group("FIN")));
+            } else if (matcher.group("OPERADOR") != null) {
+                tokens.add(new Token("OPERADOR", matcher.group("OPERADOR")));
+            } else if (matcher.group("LPAREN") != null) {
+                tokens.add(new Token("LPAREN", matcher.group("LPAREN")));
+            } else if (matcher.group("RPAREN") != null) {
+                tokens.add(new Token("RPAREN", matcher.group("RPAREN")));
+            } else if (matcher.group("LLAVEIZQ") != null) {
+                tokens.add(new Token("LLAVEIZQ", matcher.group("LLAVEIZQ")));
+            } else if (matcher.group("LLAVEDER") != null) {
+                tokens.add(new Token("LLAVEDER", matcher.group("LLAVEDER")));
+            } else if (matcher.group("SI") != null) {
+                tokens.add(new Token("SI", matcher.group("SI")));
+            } else if (matcher.group("SINO") != null) {
+                tokens.add(new Token("SINO", matcher.group("SINO")));
+            } else if (matcher.group("MIENTRAS") != null) {
+                tokens.add(new Token("MIENTRAS", matcher.group("MIENTRAS")));
+            } else if (matcher.group("TIPO") != null) {
+                tokens.add(new Token("TIPO", matcher.group("TIPO")));
+            } else if (matcher.group("NUEVALINEA") != null) {
+                // Omitir caracteres de nueva línea
+            } else if (matcher.group("ESPACIO") != null) {
+                // Omitir espacios y tabulaciones
+            } else if (matcher.group("MISMATCH") != null) {
+                throw new RuntimeException("Carácter inesperado: " + matcher.group("MISMATCH"));
+            }
+        }
+        tokens.add(new Token("EOF", null));
+        return tokens;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Ingrese el código fuente:");
+        StringBuilder codigoFuente = new StringBuilder();
+        String linea;
+        while (scanner.hasNextLine() && !(linea = scanner.nextLine()).isEmpty()) {
+            codigoFuente.append(linea).append("\n");
+        }
+
+        AnalizadorLexico lexer = new AnalizadorLexico(codigoFuente.toString());
+        List<Token> tokens = lexer.tokenizar();
+        for (Token token : tokens) {
+            System.out.println(token);
+        }
+    }
+}
